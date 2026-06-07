@@ -16,7 +16,7 @@
 
 SyLabAI 是一个面向实验室知识工作的公开 Demo 项目，定位为“韶远实验 AI 助手”的技术敲门砖。项目目标不是复刻真实企业内部系统，而是用一套可公开展示的工程骨架，表达我对 `AI + 实验资料 + 文档检索 + 实验路径辅助 + 人工确认闭环` 的理解。
 
-当前仓库处于初始工程化阶段，已经整理出目录结构、架构约束、产品计划、数据隐私边界和参考项目说明；后续会逐步补充 React 前端、ASP.NET Core Control API、DeepSeek API 适配、文档解析、SQLite FTS 检索和实验路径建议 Demo。
+当前仓库处于初始工程化阶段，已经整理出目录结构、架构约束、产品计划、数据隐私边界和参考项目说明，并补充了第一版可运行骨架：React 前端工作台、ASP.NET Core Control API、分层 Application/Domain/Infrastructure 项目、合成资料检索、实验记录抽取、路径建议草案和任务卡 Demo。
 
 > 说明：本仓库不包含任何真实企业内部资料、实验数据、供应商资料、API Key、业务截图或内部流程文件。所有后续演示数据都应使用脱敏样例或虚拟数据。真实业务系统如果落地，应在单位内部另起私有项目并重新做权限、数据、安全和部署设计。
 
@@ -129,9 +129,9 @@ sequenceDiagram
 
 更多边界见 [运维与证据边界](./docs/operations-and-evidence.md) 和 [工程约束](./docs/engineering-constraints.md)。
 
-## 本地开发规划
+## 本地开发
 
-当前仓库还没有 scaffold 具体代码。计划中的开发入口如下：
+当前仓库已经具备第一版前后端 scaffold。后端使用合成资料和进程内临时存储证明 API 契约，不会触发真实 DeepSeek 调用，也不会写入真实数据库、上传文件或生成报告。
 
 ### 1. 后端
 
@@ -158,7 +158,7 @@ python -m venv .venv
 .\.venv\Scripts\python -m pip install -r requirements.txt
 ```
 
-实际命令会在对应模块 scaffold 后同步更新。
+前端默认调用 `http://127.0.0.1:5200`。如需调整，设置 `VITE_SYLABAI_API_BASE_URL`。
 
 ## 项目亮点
 
@@ -181,10 +181,9 @@ python -m venv .venv
 
 ## 后续可改进方向
 
-- scaffold ASP.NET Core Control API 与分层项目。
-- scaffold React + TypeScript 前端工作台。
-- 接入 DeepSeek API 的 OpenAI-compatible Provider Adapter。
+- 将 demo 进程内资料存储替换为 SQLite 持久化、迁移和 FTS 检索。
+- 将当前 dry-run Provider 状态扩展为受保护的 DeepSeek OpenAI-compatible Provider Adapter。
 - 构造公开、脱敏、可演示的实验资料样例。
-- 实现 SQLite FTS 检索、文档引用和问答 Demo。
-- 实现实验记录结构化抽取与路径建议草案。
+- 将简单文档切片替换为受控 MarkItDown 文档解析边界。
+- 扩展实验记录结构化抽取与路径建议草案。
 - 补充 GitHub Actions 的基础构建和 Markdown 检查。

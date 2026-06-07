@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\SyLabAI.Application\SyLabAI.Application.csproj" />
+    <ProjectReference Include="..\SyLabAI.Infrastructure.AI\SyLabAI.Infrastructure.AI.csproj" />
+    <ProjectReference Include="..\SyLabAI.Infrastructure.Documents\SyLabAI.Infrastructure.Documents.csproj" />
+    <ProjectReference Include="..\SyLabAI.Infrastructure.Sqlite\SyLabAI.Infrastructure.Sqlite.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>

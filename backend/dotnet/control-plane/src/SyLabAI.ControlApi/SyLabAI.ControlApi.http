@@ -1,0 +1,14 @@
+@SyLabAI.ControlApi_HostAddress = http://127.0.0.1:5200
+
+GET {{SyLabAI.ControlApi_HostAddress}}/api/health/
+Accept: application/json
+
+###
+
+POST {{SyLabAI.ControlApi_HostAddress}}/api/knowledge/answers
+Content-Type: application/json
+
+{
+  "question": "温度窗口和人工复核要求是什么？",
+  "evidenceLimit": 3
+}

@@ -1,6 +1,6 @@
 # Development
 
-This document records the expected local development flow. The project is not scaffolded yet; commands here define the intended shape.
+This document records the local development flow. The project now has an initial runnable scaffold for the ASP.NET Core Control API and React/Vite web app.
 
 ## Prerequisites
 
@@ -29,7 +29,7 @@ outputs                                   # generated reports/task cards, ignore
 
 ## Backend Development
 
-Expected command shape after scaffold:
+Run the Control API:
 
 ```powershell
 cd <repo-root>
@@ -60,11 +60,11 @@ Suggested default frontend origin:
 http://localhost:3000
 ```
 
-The frontend should call the backend through a configured API base URL, not hard-coded local paths.
+The frontend calls the backend through `VITE_SYLABAI_API_BASE_URL`, defaulting to `http://127.0.0.1:5200`.
 
 ## Document Converter
 
-`backend/services/document-converter` is reserved for a narrow document parsing boundary. It may use MarkItDown or another parser, but it must not become the default application control plane.
+`backend/services/document-converter` is still reserved for a narrow document parsing boundary. The current backend uses a simple in-process chunker for synthetic text only. MarkItDown or another parser may be added later, but it must not become the default application control plane.
 
 Expected command shape if enabled:
 
@@ -89,11 +89,11 @@ backend/dotnet/control-plane/src/SyLabAI.ControlApi/appsettings.json
 backend/dotnet/control-plane/src/SyLabAI.ControlApi/appsettings.Development.json
 ```
 
-Real secrets should be supplied through local secret storage, environment variables, or ignored local config files.
+Real secrets should be supplied through environment variables or ignored local config files. Do not commit API keys, user-secrets files, or provider payloads.
 
 ## Verification
 
-Once scaffolded, use the smallest sufficient check:
+Use the smallest sufficient check:
 
 ```powershell
 dotnet build .\backend\dotnet\control-plane\SyLabAI.ControlPlane.sln

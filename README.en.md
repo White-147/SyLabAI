@@ -16,7 +16,7 @@
 
 SyLabAI is a public portfolio demo for an internal lab AI assistant concept. It is designed to demonstrate an engineering approach for `AI + experiment documents + knowledge retrieval + experiment path assistance + human review`.
 
-The repository currently contains the project skeleton, architecture notes, engineering constraints, privacy boundaries, and reference-project notes. The planned implementation includes a React frontend, ASP.NET Core Control API, DeepSeek API adapter, document parsing boundary, SQLite FTS retrieval, and source-grounded experiment path suggestions.
+The repository currently contains the project skeleton, architecture notes, engineering constraints, privacy boundaries, reference-project notes, and an initial runnable scaffold: a React workspace UI, ASP.NET Core Control API, layered Application/Domain/Infrastructure projects, synthetic knowledge retrieval, experiment extraction, path suggestion drafts, and lab task cards.
 
 > This public repository does not contain real company documents, experiment data, supplier material, API keys, business screenshots, or internal workflows. Any future demo data should be synthetic, public, or redacted. A real company deployment should be built separately in a private internal repository with its own security and deployment design.
 
@@ -100,12 +100,34 @@ See [Operations And Evidence Boundary](./docs/operations-and-evidence.md) and [E
 - [Product Plan](./docs/product-plan.md)
 - [Codex / developer entrypoint](./AGENTS.md)
 
+## Local Development
+
+The current backend uses synthetic records and in-process demo storage to prove API contracts. It does not make live DeepSeek calls, write real databases, process uploads, or generate private reports.
+
+Backend:
+
+```powershell
+cd <repo-root>
+dotnet restore .\backend\dotnet\control-plane\SyLabAI.ControlPlane.sln
+dotnet build .\backend\dotnet\control-plane\SyLabAI.ControlPlane.sln
+dotnet run --project .\backend\dotnet\control-plane\src\SyLabAI.ControlApi\SyLabAI.ControlApi.csproj
+```
+
+Frontend:
+
+```powershell
+cd <repo-root>\apps\web
+npm install
+npm run dev
+```
+
+The web app calls `http://127.0.0.1:5200` by default. Set `VITE_SYLABAI_API_BASE_URL` to override it.
+
 ## Roadmap
 
-- Scaffold the ASP.NET Core backend solution.
-- Scaffold the React + TypeScript frontend.
-- Implement a DeepSeek/OpenAI-compatible provider adapter.
+- Replace demo in-process storage with SQLite persistence, migrations, and FTS retrieval.
+- Extend the dry-run provider boundary into a guarded DeepSeek/OpenAI-compatible provider adapter.
 - Add synthetic public demo documents.
-- Implement SQLite FTS retrieval and citation-backed Q&A.
-- Add experiment record extraction and path suggestion drafts.
+- Replace simple chunking with a controlled MarkItDown document parsing boundary.
+- Expand experiment record extraction and path suggestion drafts.
 - Add basic GitHub Actions checks.
