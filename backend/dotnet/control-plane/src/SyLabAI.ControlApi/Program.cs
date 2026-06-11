@@ -9,7 +9,7 @@ using SyLabAI.ControlApi.Modules.Settings;
 using SyLabAI.ControlApi.Modules.Suggestions;
 using SyLabAI.Infrastructure.AI;
 using SyLabAI.Infrastructure.Documents;
-using SyLabAI.Infrastructure.Sqlite;
+using SyLabAI.Infrastructure.PostgreSql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,7 +37,7 @@ builder.Services
     .AddSyLabAIApplication()
     .AddSyLabAIAiInfrastructure()
     .AddSyLabAIDocumentInfrastructure()
-    .AddSyLabAISqliteInfrastructure();
+    .AddSyLabAIPostgreSqlInfrastructure();
 
 var app = builder.Build();
 

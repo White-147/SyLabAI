@@ -11,13 +11,15 @@ internal sealed class KnowledgeService(ILabKnowledgeStore store) : IKnowledgeSer
         cancellationToken.ThrowIfCancellationRequested();
 
         var terms = GetSearchTerms(request.Query);
-        var hits = store.GetChunks()
-            .Select(chunk => ScoreChunk(chunk, request.Query, terms))
-            .Where(hit => hit.Score > 0)
-            .OrderByDescending(hit => hit.Score)
-            .ThenBy(hit => hit.Citation.DocumentTitle)
-            .Take(Math.Clamp(request.Limit, 1, 12))
-            .ToArray();
+        var limit = Math.Clamp(request.Limit, 1, 12);
+        var candidateLimit = Math.Clamp(limit * 4, limit, 48);
+        var candidates = store.SearchChunks(request.Query, candidateLimit);
+        var hits = RankChunks(candidates, request.Query, terms, limit);
+
+        if (hits.Count == 0)
+        {
+            hits = RankChunks(store.GetChunks(), request.Query, terms, limit);
+        }
 
         return Task.FromResult<IReadOnlyList<SearchHit>>(hits);
     }
@@ -45,6 +47,21 @@ internal sealed class KnowledgeService(ILabKnowledgeStore store) : IKnowledgeSer
             evidence,
             ["这是来源摘要，不是最终实验结论。", "涉及安全、材料或工艺决策时必须由实验负责人确认。"],
             RequiresHumanReview: true);
+    }
+
+    private static IReadOnlyList<SearchHit> RankChunks(
+        IReadOnlyList<DocumentChunk> chunks,
+        string rawQuery,
+        IReadOnlyList<string> terms,
+        int limit)
+    {
+        return chunks
+            .Select(chunk => ScoreChunk(chunk, rawQuery, terms))
+            .Where(hit => hit.Score > 0)
+            .OrderByDescending(hit => hit.Score)
+            .ThenBy(hit => hit.Citation.DocumentTitle)
+            .Take(limit)
+            .ToArray();
     }
 
     private static SearchHit ScoreChunk(DocumentChunk chunk, string rawQuery, IReadOnlyList<string> terms)

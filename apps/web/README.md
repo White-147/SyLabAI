@@ -2,7 +2,19 @@
 
 This directory contains the React + TypeScript frontend workspace.
 
-Planned feature areas:
+The app uses React Router so the left rail is an application menu, not a single-page anchor list. Each product area owns its route page, while `src/app` owns the route table and shell layout.
+
+Current structure:
+
+- `src/app/App.tsx`
+- `src/app/routes.tsx`
+- `src/app/layouts/AppShell.tsx`
+- `src/app/navigation.ts`
+- `src/shared/api`
+- `src/shared/types`
+- `src/shared/ui`
+
+Feature route pages:
 
 - `dashboard`
 - `document-library`
@@ -12,7 +24,7 @@ Planned feature areas:
 - `lab-tasks`
 - `settings`
 
-Frontend code should call backend capabilities only through Control API wrappers. It must not directly read local files, SQLite databases, provider SDKs, API keys, or document converter internals.
+Frontend code should call backend capabilities only through Control API wrappers. It must not directly read local files, PostgreSQL databases, provider SDKs, API keys, or document converter internals.
 
 ## Commands
 

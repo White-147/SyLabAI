@@ -43,7 +43,7 @@ backend/dotnet/control-plane/src/
 ├── SyLabAI.Domain
 ├── SyLabAI.Infrastructure.AI
 ├── SyLabAI.Infrastructure.Documents
-├── SyLabAI.Infrastructure.Sqlite
+├── SyLabAI.Infrastructure.PostgreSql
 └── SyLabAI.Worker
 ```
 
@@ -54,7 +54,7 @@ Layer expectations:
 - `SyLabAI.Domain` owns domain models, value objects, enums, and shared contracts that are independent of provider/runtime details.
 - `SyLabAI.Infrastructure.AI` owns remote model provider adapters, including DeepSeek/OpenAI-compatible clients, retry policy, redaction, and provider telemetry boundaries.
 - `SyLabAI.Infrastructure.Documents` owns document parser adapters, MarkItDown integration boundaries, chunking helpers, and conversion safety checks.
-- `SyLabAI.Infrastructure.Sqlite` owns SQLite persistence, migrations, repositories, FTS search, and optional future vector storage.
+- `SyLabAI.Infrastructure.PostgreSql` owns PostgreSQL persistence, schema initialization or migrations, repositories, search indexes, partition-ready table design, and optional future vector storage.
 - `SyLabAI.Worker` owns background jobs that can be resumed or retried, such as ingestion, conversion, extraction, and batch suggestion runs.
 
 Frontend shape:
@@ -92,7 +92,7 @@ Frontend rules:
 - Prompt construction should produce sanitized, purpose-specific prompt briefs; do not dump full internal debug prompts into logs or public DTOs.
 - Live calls should return structured success, structured provider error, or structured degradation.
 - Do not require embeddings in the MVP unless an embedding API is explicitly approved.
-- If embeddings are later added, keep the embedding generator and vector store behind interfaces so SQLite FTS can remain a fallback.
+- If embeddings are later added, keep the embedding generator and vector store behind interfaces so PostgreSQL search can remain the baseline retrieval path.
 
 ## Document Conversion Boundary
 
@@ -107,7 +107,7 @@ Frontend rules:
 Default local folders:
 
 ```text
-data/       # SQLite database and durable local app state
+data/       # durable local app state and non-database runtime metadata
 uploads/    # uploaded documents before/after ingestion
 outputs/    # generated exports, task cards, reports
 .tools/     # project-local tools

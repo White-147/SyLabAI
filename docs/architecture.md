@@ -12,7 +12,7 @@ flowchart LR
     App --> Domain["SyLabAI.Domain"]
     App --> AI["SyLabAI.Infrastructure.AI\nDeepSeek / OpenAI-compatible API"]
     App --> Docs["SyLabAI.Infrastructure.Documents\nParser adapters"]
-    App --> Db["SyLabAI.Infrastructure.Sqlite\nSQLite + FTS"]
+    App --> Db["SyLabAI.Infrastructure.PostgreSql\nPostgreSQL + search indexes"]
     Docs --> Converter["backend/services/document-converter\nMarkItDown boundary"]
     App --> Worker["SyLabAI.Worker\nBackground jobs"]
     Worker --> AI
@@ -30,7 +30,7 @@ flowchart LR
 | Domain | `backend/dotnet/control-plane/src/SyLabAI.Domain` | Domain entities, value objects, and provider-independent contracts. |
 | AI infrastructure | `backend/dotnet/control-plane/src/SyLabAI.Infrastructure.AI` | Remote model providers, DeepSeek/OpenAI-compatible adapter, retry, redaction, and structured provider errors. |
 | Document infrastructure | `backend/dotnet/control-plane/src/SyLabAI.Infrastructure.Documents` | Document conversion interfaces, chunking, metadata normalization, and parser safety checks. |
-| SQLite infrastructure | `backend/dotnet/control-plane/src/SyLabAI.Infrastructure.Sqlite` | SQLite persistence, migrations, repositories, FTS search, and optional future vector store. |
+| PostgreSQL infrastructure | `backend/dotnet/control-plane/src/SyLabAI.Infrastructure.PostgreSql` | PostgreSQL persistence, schema initialization, repositories, full-text / keyword search, partition-ready table design, and optional future vector store. |
 | Worker | `backend/dotnet/control-plane/src/SyLabAI.Worker` | Durable background work such as ingestion, extraction, and batch suggestion jobs. |
 | Document converter | `backend/services/document-converter` | Optional Python boundary for MarkItDown or other document parsers. |
 | Windows scripts | `scripts/windows` | Local setup, run, verification, and future Windows service helpers. |
@@ -53,12 +53,27 @@ SyLabAI.ControlApi/Modules/
 Module responsibilities:
 
 - `Health`: liveness, readiness, version, and local dependency checks.
-- `Documents`: upload, ingest, parse status, document metadata, source preview.
+- `Documents`: controlled text ingestion, converter dry-run checks, parse status, document metadata, source preview.
 - `Knowledge`: search, source-grounded Q&A, citation retrieval.
 - `Experiments`: historical experiment records, structured extraction, result feedback.
 - `Suggestions`: experiment path suggestions, assumptions, risks, evidence, and human review state.
 - `LabTasks`: task cards, SOP drafts, handoff status, result return.
 - `Settings`: provider settings, model selection, parsing options, local app preferences.
+
+Current implemented document and provider routes:
+
+```text
+GET  /api/documents/
+POST /api/documents/ingestions
+POST /api/documents/conversions/dry-run
+POST /api/knowledge/search
+POST /api/knowledge/answers
+GET  /api/settings/provider
+PUT  /api/settings/provider
+GET  /api/settings/provider/models
+POST /api/settings/provider/connectivity-tests
+DELETE /api/settings/provider/api-key
+```
 
 ## Frontend Product Areas
 
@@ -93,13 +108,13 @@ sequenceDiagram
     participant W as Web
     participant A as Control API
     participant D as Document Adapter
-    participant DB as SQLite
+    participant DB as PostgreSQL
     participant M as DeepSeek API
 
-    U->>W: Upload document or experiment record
-    W->>A: Create document ingestion request
-    A->>D: Convert and normalize document
-    D-->>A: Text chunks + metadata + provenance
+    U->>W: Submit controlled text or document metadata dry-run
+    W->>A: Create ingestion request or converter dry-run
+    A->>D: Validate parser boundary / chunk controlled text
+    D-->>A: Normalized text chunks + metadata + provenance
     A->>DB: Store document, chunks, FTS index
     U->>W: Ask question or request path suggestion
     W->>A: Query knowledge / create suggestion
@@ -114,16 +129,18 @@ sequenceDiagram
 
 ## Data Strategy
 
-MVP persistence should use SQLite because it is simple, Windows-friendly, and enough for a single internal tool or early prototype.
+MVP persistence uses PostgreSQL as the only runtime database. SQLite is not retained as a parallel fallback because the project needs to handle large experiment, crawler, and document-derived datasets beyond lightweight embedded-database assumptions.
 
-Initial retrieval should use:
+Initial retrieval uses:
 
 - normalized document chunks,
-- SQLite FTS for keyword retrieval,
-- optional LLM reranking through DeepSeek,
+- PostgreSQL full-text search for English/structured terms,
+- keyword fallback for CJK and short lab terms,
+- application-layer scoring fallback when FTS returns no usable candidate,
+- optional later LLM reranking through DeepSeek,
 - citations tied to document/chunk metadata.
 
-Vector search should stay optional until an approved embedding API exists. If embeddings are introduced later, the vector store should be a replaceable infrastructure detail.
+Large tables should be designed for partitioning by dataset, project, source, or time once production ingestion requirements are confirmed. Vector search should stay optional until an approved embedding API exists. If embeddings are introduced later, the vector store should be a replaceable infrastructure detail within PostgreSQL or a separately approved analytical component.
 
 ## Deployment Direction
 

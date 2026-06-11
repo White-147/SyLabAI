@@ -9,7 +9,7 @@ Projects:
 - `src/SyLabAI.Domain`
 - `src/SyLabAI.Infrastructure.AI`
 - `src/SyLabAI.Infrastructure.Documents`
-- `src/SyLabAI.Infrastructure.Sqlite`
+- `src/SyLabAI.Infrastructure.PostgreSql`
 - `src/SyLabAI.Worker`
 - `tests/SyLabAI.ControlApi.Tests`
 
@@ -27,8 +27,12 @@ The Control API should expose stable DTO-based endpoints. Provider calls, docume
 - `GET /api/lab-tasks`
 - `POST /api/lab-tasks`
 - `GET /api/settings/provider`
+- `PUT /api/settings/provider`
+- `GET /api/settings/provider/models`
+- `DELETE /api/settings/provider/api-key`
+- `POST /api/settings/provider/connectivity-tests`
 
-The current implementation uses synthetic seed records and in-process demo storage. It does not make live provider calls or write real SQLite databases yet.
+The current implementation uses PostgreSQL as the single runtime database for knowledge and task data. Provider model listing and connectivity tests are explicit settings actions; generation calls remain disabled unless provider settings explicitly enable guarded live calls.
 
 ## Commands
 

@@ -6,29 +6,51 @@ import type {
   HealthDto,
   LabTaskDto,
   PathSuggestionDraftDto,
+  ProviderConnectivityTestResultDto,
+  ProviderModelListResultDto,
   ProviderStatusDto,
   SearchHitDto,
   StructuredExperimentRecordDto,
+  UpdateProviderSettingsDto,
 } from '../types/sylabTypes';
 
 const configuredBaseUrl = import.meta.env.VITE_SYLABAI_API_BASE_URL as string | undefined;
 const API_BASE_URL = (configuredBaseUrl?.replace(/\/$/, '') || 'http://127.0.0.1:5200');
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(init?.headers ?? {}),
-    },
-    ...init,
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(init?.headers ?? {}),
+      },
+      ...init,
+    });
+  } catch {
+    throw new Error(`Control API 未连接：请先启动后端服务 ${API_BASE_URL}`);
+  }
 
   if (!response.ok) {
-    const details = await response.text();
+    const details = await readErrorMessage(response);
     throw new Error(details || `Request failed with status ${response.status}`);
   }
 
   return response.json() as Promise<T>;
+}
+
+async function readErrorMessage(response: Response) {
+  const contentType = response.headers.get('content-type') ?? '';
+
+  if (contentType.includes('application/json')) {
+    const payload = (await response.json().catch(() => null)) as { message?: unknown } | null;
+    if (typeof payload?.message === 'string') {
+      return payload.message;
+    }
+  }
+
+  return response.text();
 }
 
 export const sylabApi = {
@@ -37,6 +59,24 @@ export const sylabApi = {
   getHealth: () => request<HealthDto>('/api/health/'),
 
   getProviderStatus: () => request<ProviderStatusDto>('/api/settings/provider'),
+
+  updateProviderSettings: (payload: UpdateProviderSettingsDto) =>
+    request<ProviderStatusDto>('/api/settings/provider', {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    }),
+
+  clearProviderApiKey: () =>
+    request<ProviderStatusDto>('/api/settings/provider/api-key', {
+      method: 'DELETE',
+    }),
+
+  testProviderConnectivity: () =>
+    request<ProviderConnectivityTestResultDto>('/api/settings/provider/connectivity-tests', {
+      method: 'POST',
+    }),
+
+  listProviderModels: () => request<ProviderModelListResultDto>('/api/settings/provider/models'),
 
   listDocuments: () => request<DocumentSummaryDto[]>('/api/documents/'),
 
@@ -78,4 +118,3 @@ export const sylabApi = {
       body: JSON.stringify(payload),
     }),
 };
-

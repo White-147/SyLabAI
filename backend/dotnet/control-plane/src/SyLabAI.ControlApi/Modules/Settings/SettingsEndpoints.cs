@@ -9,18 +9,61 @@ internal static class SettingsEndpoints
     {
         var group = app.MapGroup("/api/settings").WithTags("Settings");
 
-        group.MapGet("/provider", (IProviderStatusService service) =>
+        group.MapGet("/provider", (IProviderSettingsService service) =>
         {
-            var status = service.GetStatus();
-            return Results.Ok(new ProviderStatusDto(
-                status.Provider,
-                status.Model,
-                status.Configured,
-                status.Mode,
-                status.SafetyGates));
+            return Results.Ok(service.GetStatus().ToDto());
+        });
+
+        group.MapPut("/provider", (
+            UpdateProviderSettingsDto request,
+            IProviderSettingsService service) =>
+        {
+            var validation = Validate(request);
+            if (validation is not null)
+            {
+                return Results.BadRequest(validation);
+            }
+
+            var status = service.SaveSettings(new ProviderSettingsUpdate(
+                request.baseUrl,
+                request.model,
+                request.apiKey,
+                request.liveCallsEnabled));
+
+            return Results.Ok(status.ToDto());
+        });
+
+        group.MapGet("/provider/models", async (
+            IProviderSettingsService service,
+            CancellationToken cancellationToken) =>
+        {
+            var result = await service.ListModelsAsync(cancellationToken);
+            return Results.Ok(result.ToDto());
+        });
+
+        group.MapDelete("/provider/api-key", (IProviderSettingsService service) =>
+        {
+            return Results.Ok(service.ClearApiKey().ToDto());
+        });
+
+        group.MapPost("/provider/connectivity-tests", async (
+            IProviderSettingsService service,
+            CancellationToken cancellationToken) =>
+        {
+            var result = await service.TestConnectivityAsync(cancellationToken);
+            return Results.Ok(result.ToDto());
         });
 
         return app;
     }
-}
 
+    private static ValidationErrorDto? Validate(UpdateProviderSettingsDto request)
+    {
+        if (!Uri.TryCreate(request.baseUrl, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps)
+        {
+            return new ValidationErrorDto("Provider Base URL must be an HTTPS absolute URL.");
+        }
+
+        return null;
+    }
+}

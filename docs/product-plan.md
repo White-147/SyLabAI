@@ -39,6 +39,13 @@ The first useful milestone should prove:
 4. An experiment record can be converted into structured fields.
 5. A path suggestion can be produced with evidence, assumptions, and risks.
 
+Current implementation note:
+
+- Controlled text ingestion is persisted in PostgreSQL and indexed for source retrieval.
+- File parser integration is represented by a converter dry-run boundary; full uploaded-file parsing still requires the later parser adapter.
+- DeepSeek provider configuration supports protected API key storage, provider model listing, and connectivity tests; generation calls remain explicitly disabled by default.
+- SQLite is not retained as a runtime database because the product needs a path toward 100GB+ tables and larger analytical workloads.
+
 ## Safety Positioning
 
 Every path suggestion is a draft. The product must keep human review visible and avoid presenting AI output as final experimental truth.

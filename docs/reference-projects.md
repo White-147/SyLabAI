@@ -32,6 +32,13 @@ src\microsoft-extensions-ai\abstraction-implementations
 
 SyLabAI should borrow the abstraction style, not the exact OpenAI-only configuration. DeepSeek should live behind a provider adapter with configurable base URL, model, timeout, API key source, and structured errors.
 
+Current adoption:
+
+- Provider status is exposed through an application interface and an infrastructure implementation.
+- DeepSeek configuration is centralized under `SyLabAI:Provider`.
+- API keys are detected by source only and are not returned through DTOs.
+- Live calls remain explicitly gated while the first provider adapter is wired.
+
 ## `agent-framework-samples`
 
 Path:
@@ -71,6 +78,12 @@ Use for:
 
 SyLabAI should keep MarkItDown behind a document converter boundary and sanitize file access. The converter should return normalized text and metadata, not write directly to the app database.
 
+Current adoption:
+
+- `POST /api/documents/conversions/dry-run` validates file metadata before any parser handoff.
+- The dry-run adapter returns safety checks and rejection reasons without reading files or writing uploads.
+- Text ingestion remains separate from future parser execution.
+
 ## `sqlite-vec`
 
 Path:
@@ -79,12 +92,34 @@ Path:
 <local-reference-root>\shaoyuan-ai-api\sqlite-vec
 ```
 
+Historical reference only:
+
+- optional future lightweight vector search ideas,
+- embedded-database tradeoff comparison.
+
+Do not use SQLite or `sqlite-vec` as a runtime database in SyLabAI. The project uses PostgreSQL as its single database direction.
+
+Current adoption:
+
+- No SQLite runtime storage is retained.
+- Knowledge search asks the PostgreSQL store for candidates first, then applies application-layer scoring and fallback.
+- No vector dependency is required for the MVP.
+
+## `PostgreSQL`
+
 Use for:
 
-- optional future lightweight vector search,
-- Windows-friendly SQLite vector storage if embeddings are later approved.
+- production-ready relational storage,
+- large document and crawler-derived datasets,
+- partition-ready schema design,
+- full-text search and indexed keyword retrieval,
+- future vector extensions only if embeddings are approved.
 
-Do not require `sqlite-vec` in the first version. Start with SQLite FTS / keyword retrieval and optional LLM reranking.
+Current adoption:
+
+- `SyLabAI.Infrastructure.PostgreSql` is the single persistence infrastructure project.
+- Runtime configuration uses `ConnectionStrings:SyLabAI`, `SyLabAI:PostgreSql:ConnectionString`, or `SYLABAI_POSTGRES_CONNECTION_STRING`.
+- SQLite is not kept as a fallback.
 
 ## Local Project Lessons
 

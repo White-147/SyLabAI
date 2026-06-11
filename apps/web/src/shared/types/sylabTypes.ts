@@ -69,9 +69,39 @@ export interface LabTaskDto {
 export interface ProviderStatusDto {
   provider: string;
   model: string;
+  baseUrl: string;
   configured: boolean;
+  apiKeySource: string;
   mode: string;
+  liveCallsEnabled: boolean;
   safetyGates: string[];
+}
+
+export interface UpdateProviderSettingsDto {
+  baseUrl: string;
+  model: string;
+  apiKey?: string;
+  liveCallsEnabled: boolean;
+}
+
+export interface ProviderConnectivityTestResultDto {
+  status: string;
+  message: string;
+  httpStatusCode?: number;
+  checkedAt: string;
+}
+
+export interface ProviderModelOptionDto {
+  id: string;
+  ownedBy: string;
+}
+
+export interface ProviderModelListResultDto {
+  status: string;
+  message: string;
+  httpStatusCode?: number;
+  models: ProviderModelOptionDto[];
+  checkedAt: string;
 }
 
 export interface CreateDocumentIngestionDto {
@@ -86,4 +116,3 @@ export interface CreateLabTaskDto {
   steps: string[];
   reviewChecklist: string[];
 }
-

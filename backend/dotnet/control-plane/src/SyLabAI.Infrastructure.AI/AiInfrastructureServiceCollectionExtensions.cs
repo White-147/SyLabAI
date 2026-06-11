@@ -8,8 +8,12 @@ public static class AiInfrastructureServiceCollectionExtensions
 {
     public static IServiceCollection AddSyLabAIAiInfrastructure(this IServiceCollection services)
     {
-        services.AddSingleton<IProviderStatusService, DemoProviderStatusService>();
+        services.AddSingleton<LocalProviderSettingsStore>();
+        services
+            .AddHttpClient<IProviderSettingsService, DeepSeekProviderSettingsService>(client =>
+            {
+                client.Timeout = TimeSpan.FromSeconds(12);
+            });
         return services;
     }
 }
-

@@ -33,6 +33,18 @@ internal static class DocumentEndpoints
             return Results.Created($"/api/documents/{document.Id}", document.ToDto());
         });
 
+        group.MapPost("/conversions/dry-run", async (
+            DocumentConversionDryRunDto request,
+            IDocumentConversionService service,
+            CancellationToken cancellationToken) =>
+        {
+            var result = await service.DryRunAsync(
+                new DocumentConversionDryRunRequest(request.fileName, request.contentType, request.sizeBytes),
+                cancellationToken);
+
+            return Results.Ok(result.ToDto());
+        });
+
         return app;
     }
 
@@ -61,4 +73,3 @@ internal static class DocumentEndpoints
         return null;
     }
 }
-

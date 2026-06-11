@@ -32,10 +32,6 @@ outputs/*
 *.sqlite
 *.sqlite3
 
-# Keep the planned SQLite infrastructure project directory tracked.
-!backend/dotnet/control-plane/src/SyLabAI.Infrastructure.Sqlite/
-!backend/dotnet/control-plane/src/SyLabAI.Infrastructure.Sqlite/.gitkeep
-
 # .NET
 bin/
 obj/

@@ -1,8 +1,10 @@
+using SyLabAI.Application.Settings;
 using SyLabAI.Domain.Documents;
 using SyLabAI.Domain.Experiments;
 using SyLabAI.Domain.Knowledge;
 using SyLabAI.Domain.Suggestions;
 using SyLabAI.Domain.Tasks;
+using SyLabAI.Application.Documents;
 
 namespace SyLabAI.ControlApi.Contracts;
 
@@ -18,6 +20,49 @@ internal static class ApiContractMappers
             document.Summary,
             document.CreatedAt,
             document.Chunks.Count);
+    }
+
+    public static DocumentConversionDryRunResultDto ToDto(this DocumentConversionDryRunResult result)
+    {
+        return new DocumentConversionDryRunResultDto(
+            result.Accepted,
+            result.Mode,
+            result.NormalizedExtension,
+            result.MaxSizeBytes,
+            result.SafetyChecks,
+            result.RejectionReasons);
+    }
+
+    public static ProviderStatusDto ToDto(this ProviderStatus status)
+    {
+        return new ProviderStatusDto(
+            status.Provider,
+            status.Model,
+            status.BaseUrl,
+            status.Configured,
+            status.ApiKeySource,
+            status.Mode,
+            status.LiveCallsEnabled,
+            status.SafetyGates);
+    }
+
+    public static ProviderConnectivityTestResultDto ToDto(this ProviderConnectivityTestResult result)
+    {
+        return new ProviderConnectivityTestResultDto(
+            result.Status,
+            result.Message,
+            result.HttpStatusCode,
+            result.CheckedAt);
+    }
+
+    public static ProviderModelListResultDto ToDto(this ProviderModelListResult result)
+    {
+        return new ProviderModelListResultDto(
+            result.Status,
+            result.Message,
+            result.HttpStatusCode,
+            result.Models.Select(model => new ProviderModelOptionDto(model.Id, model.OwnedBy)).ToArray(),
+            result.CheckedAt);
     }
 
     public static CitationDto ToDto(this SourceCitation citation)
@@ -79,4 +124,3 @@ internal static class ApiContractMappers
             task.CreatedAt);
     }
 }
-

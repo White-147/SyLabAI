@@ -11,8 +11,9 @@ public interface ILabKnowledgeStore
 
     IReadOnlyList<DocumentChunk> GetChunks();
 
+    IReadOnlyList<DocumentChunk> SearchChunks(string query, int limit);
+
     IReadOnlyList<LabTask> GetLabTasks();
 
     LabTask AddLabTask(LabTask task);
 }
-

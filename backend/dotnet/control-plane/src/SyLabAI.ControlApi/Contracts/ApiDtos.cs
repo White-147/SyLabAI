@@ -15,6 +15,19 @@ public sealed record CreateDocumentIngestionDto(
     string content,
     string? summary);
 
+public sealed record DocumentConversionDryRunDto(
+    string? fileName,
+    string? contentType,
+    long sizeBytes);
+
+public sealed record DocumentConversionDryRunResultDto(
+    bool accepted,
+    string mode,
+    string normalizedExtension,
+    long maxSizeBytes,
+    IReadOnlyList<string> safetyChecks,
+    IReadOnlyList<string> rejectionReasons);
+
 public sealed record CitationDto(
     Guid documentId,
     Guid chunkId,
@@ -77,9 +90,35 @@ public sealed record LabTaskDto(
 public sealed record ProviderStatusDto(
     string provider,
     string model,
+    string baseUrl,
     bool configured,
+    string apiKeySource,
     string mode,
+    bool liveCallsEnabled,
     IReadOnlyList<string> safetyGates);
+
+public sealed record UpdateProviderSettingsDto(
+    string baseUrl,
+    string model,
+    string? apiKey,
+    bool liveCallsEnabled);
+
+public sealed record ProviderConnectivityTestResultDto(
+    string status,
+    string message,
+    int? httpStatusCode,
+    DateTimeOffset checkedAt);
+
+public sealed record ProviderModelOptionDto(
+    string id,
+    string ownedBy);
+
+public sealed record ProviderModelListResultDto(
+    string status,
+    string message,
+    int? httpStatusCode,
+    IReadOnlyList<ProviderModelOptionDto> models,
+    DateTimeOffset checkedAt);
 
 public sealed record HealthDto(
     string status,
@@ -89,4 +128,3 @@ public sealed record HealthDto(
     DateTimeOffset checkedAt);
 
 public sealed record ValidationErrorDto(string message);
-

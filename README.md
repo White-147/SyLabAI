@@ -8,7 +8,7 @@
 
 <p align="center">
   <img alt="Status" src="https://img.shields.io/badge/status-portfolio%20demo-7952B3?style=for-the-badge">
-  <img alt="Stack" src="https://img.shields.io/badge/stack-React%20%2B%20.NET%20%2B%20SQLite-2E7D32?style=for-the-badge">
+  <img alt="Stack" src="https://img.shields.io/badge/stack-React%20%2B%20.NET%20%2B%20PostgreSQL-2E7D32?style=for-the-badge">
   <img alt="AI" src="https://img.shields.io/badge/AI-DeepSeek%20API-2563EB?style=for-the-badge">
   <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20Server-0078D4?style=for-the-badge">
   <a href="./LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-blue?style=for-the-badge"></a>
@@ -37,8 +37,8 @@ SyLabAI 是一个面向实验室知识工作的公开 Demo 项目，定位为“
 | 前端 | React、TypeScript、Vite |
 | 后端控制面 | ASP.NET Core Web API |
 | 应用层 | C# Application Services、DTO、Use Case 边界 |
-| 数据存储 | SQLite MVP；后续可评估 SQL Server Express |
-| 检索 | SQLite FTS / 关键词检索优先，向量检索保留为可选扩展 |
+| 数据存储 | PostgreSQL 作为唯一项目数据库 |
+| 检索 | PostgreSQL 全文检索 / 关键词检索优先，向量检索保留为可选扩展 |
 | AI Provider | DeepSeek API，通过 OpenAI-compatible adapter 接入 |
 | 文档解析 | MarkItDown 作为候选解析器，放在独立文档转换边界 |
 | 部署目标 | Windows Server / 内网部署，IIS 或 Kestrel |
@@ -54,7 +54,7 @@ flowchart LR
     App --> Domain["Domain\n实验文档 / 记录 / 任务模型"]
     App --> AI["Infrastructure.AI\nDeepSeek API Adapter"]
     App --> Docs["Infrastructure.Documents\n文档解析与切片边界"]
-    App --> Db["Infrastructure.Sqlite\nSQLite + FTS"]
+    App --> Db["Infrastructure.PostgreSql\nPostgreSQL + Search"]
     Docs --> Converter["document-converter\nMarkItDown boundary"]
     App --> Worker["Worker\n导入 / 解析 / 抽取任务"]
     Worker --> AI
@@ -77,13 +77,13 @@ SyLabAI/
 │   │   ├── src/SyLabAI.Domain
 │   │   ├── src/SyLabAI.Infrastructure.AI
 │   │   ├── src/SyLabAI.Infrastructure.Documents
-│   │   ├── src/SyLabAI.Infrastructure.Sqlite
+│   │   ├── src/SyLabAI.Infrastructure.PostgreSql
 │   │   ├── src/SyLabAI.Worker
 │   │   └── tests/SyLabAI.ControlApi.Tests
 │   └── services/document-converter/      # 文档解析 sidecar / adapter 边界
 ├── docs/                                 # 架构、开发、约束、运维和参考项目说明
 ├── scripts/windows/                      # Windows 本地开发、验证和部署脚本
-├── data/                                 # 本地 SQLite / runtime 数据，占位不提交真实数据
+├── data/                                 # runtime 数据占位，不提交真实数据
 ├── uploads/                              # 上传文件目录，占位不提交真实文件
 ├── outputs/                              # 生成报告 / 任务卡，占位不提交真实输出
 ├── .tools/ .cache/ .config/ .tmp/         # 项目本地工具、缓存、配置和临时目录
@@ -100,7 +100,7 @@ sequenceDiagram
     participant W as Web 前端
     participant A as Control API
     participant D as 文档解析边界
-    participant DB as SQLite / FTS
+    participant DB as PostgreSQL / Search
     participant M as DeepSeek API
 
     U->>W: 上传实验资料 / 历史记录
@@ -131,7 +131,7 @@ sequenceDiagram
 
 ## 本地开发
 
-当前仓库已经具备第一版前后端 scaffold。后端使用合成资料和进程内临时存储证明 API 契约，不会触发真实 DeepSeek 调用，也不会写入真实数据库、上传文件或生成报告。
+当前仓库已经具备第一版前后端 scaffold。后端使用 PostgreSQL 作为唯一项目数据库保存资料和任务数据；Provider 模型列表与联通测试只通过设置页显式触发，生成调用仍默认关闭，不会处理真实上传文件或生成私有报告。
 
 ### 1. 后端
 
@@ -181,7 +181,7 @@ python -m venv .venv
 
 ## 后续可改进方向
 
-- 将 demo 进程内资料存储替换为 SQLite 持久化、迁移和 FTS 检索。
+- 将 demo 进程内资料存储替换为 PostgreSQL 持久化、索引和检索。
 - 将当前 dry-run Provider 状态扩展为受保护的 DeepSeek OpenAI-compatible Provider Adapter。
 - 构造公开、脱敏、可演示的实验资料样例。
 - 将简单文档切片替换为受控 MarkItDown 文档解析边界。
