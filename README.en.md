@@ -1,4 +1,4 @@
-<h1 align="center">SyLabAI</h1>
+﻿<h1 align="center">SyLabAI</h1>
 
 <p align="center">A public portfolio demo for a lab AI assistant, focused on experiment document search, structured experiment records, path suggestions, and lab task handoff.</p>
 
@@ -8,7 +8,7 @@
 
 <p align="center">
   <img alt="Status" src="https://img.shields.io/badge/status-portfolio%20demo-7952B3?style=for-the-badge">
-  <img alt="Stack" src="https://img.shields.io/badge/stack-React%20%2B%20.NET%20%2B%20PostgreSQL-2E7D32?style=for-the-badge">
+  <img alt="Stack" src="https://img.shields.io/badge/stack-React%20%2B%20.NET%20%2B%20SQL%20Server-2E7D32?style=for-the-badge">
   <img alt="AI" src="https://img.shields.io/badge/AI-DeepSeek%20API-2563EB?style=for-the-badge">
   <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20Server-0078D4?style=for-the-badge">
   <a href="./LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-blue?style=for-the-badge"></a>
@@ -37,8 +37,8 @@ The repository currently contains the project skeleton, architecture notes, engi
 | Frontend | React, TypeScript, Vite |
 | Backend | ASP.NET Core Web API |
 | Application layer | C# application services, DTOs, use-case boundaries |
-| Storage | PostgreSQL as the only project database |
-| Retrieval | PostgreSQL full-text / keyword retrieval first; vector retrieval remains optional |
+| Storage | SQL Server as the only project database |
+| Retrieval | SQL Server keyword retrieval first; Full-Text Search and vector retrieval remain optional |
 | AI Provider | DeepSeek API through an OpenAI-compatible adapter |
 | Documents | MarkItDown behind a document conversion boundary |
 | Deployment | Windows Server / intranet, IIS or Kestrel |
@@ -53,7 +53,7 @@ flowchart LR
     App --> Domain["Domain\nDocuments / experiments / tasks"]
     App --> AI["Infrastructure.AI\nDeepSeek API Adapter"]
     App --> Docs["Infrastructure.Documents\nParsing boundary"]
-    App --> Db["Infrastructure.PostgreSql\nPostgreSQL + Search"]
+    App --> Db["Infrastructure.SqlServer\nSQL Server + Search"]
     Docs --> Converter["document-converter\nMarkItDown boundary"]
     App --> Worker["Worker\nIngestion / extraction jobs"]
     Worker --> AI
@@ -85,7 +85,7 @@ This repository is public and should never include:
 
 - real lab records, internal SOPs, supplier data, customer data, or company screenshots;
 - DeepSeek API keys or other provider secrets;
-- PostgreSQL dumps, logs, uploaded files, generated reports, or raw provider payloads;
+- SQL Server databases, backups, logs, uploaded files, generated reports, or raw provider payloads;
 - local absolute paths, raw prompts, or unredacted operational evidence.
 
 See [Operations And Evidence Boundary](./docs/operations-and-evidence.md) and [Engineering Constraints](./docs/engineering-constraints.md) for details.
@@ -102,7 +102,7 @@ See [Operations And Evidence Boundary](./docs/operations-and-evidence.md) and [E
 
 ## Local Development
 
-The current backend uses PostgreSQL persistence for knowledge and task data. Provider model listing and connectivity tests are explicit settings actions; generation calls remain disabled unless provider settings explicitly enable guarded live calls, and the public demo should not process real uploads or generate private reports.
+The current backend uses SQL Server persistence for knowledge and task data. Provider model listing and connectivity tests are explicit settings actions; generation calls remain disabled unless provider settings explicitly enable guarded live calls, and the public demo should not process real uploads or generate private reports.
 
 Backend:
 
@@ -125,7 +125,7 @@ The web app calls `http://127.0.0.1:5200` by default. Set `VITE_SYLABAI_API_BASE
 
 ## Roadmap
 
-- Harden PostgreSQL persistence, indexing, backup, and retrieval workflows for larger datasets.
+- Harden SQL Server persistence, indexing, backup, and retrieval workflows for larger datasets.
 - Extend the dry-run provider boundary into a guarded DeepSeek/OpenAI-compatible provider adapter.
 - Add synthetic public demo documents.
 - Replace simple chunking with a controlled MarkItDown document parsing boundary.

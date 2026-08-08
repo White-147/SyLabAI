@@ -1,4 +1,4 @@
-# Architecture
+﻿# Architecture
 
 SyLabAI is a Windows Server / intranet-first lab AI assistant. The system is organized as a small monorepo with one web app, one .NET control plane, optional background workers, and a narrow document-conversion boundary.
 
@@ -12,7 +12,7 @@ flowchart LR
     App --> Domain["SyLabAI.Domain"]
     App --> AI["SyLabAI.Infrastructure.AI\nDeepSeek / OpenAI-compatible API"]
     App --> Docs["SyLabAI.Infrastructure.Documents\nParser adapters"]
-    App --> Db["SyLabAI.Infrastructure.PostgreSql\nPostgreSQL + search indexes"]
+    App --> Db["SyLabAI.Infrastructure.SqlServer\nSQL Server + search indexes"]
     Docs --> Converter["backend/services/document-converter\nMarkItDown boundary"]
     App --> Worker["SyLabAI.Worker\nBackground jobs"]
     Worker --> AI
@@ -30,7 +30,7 @@ flowchart LR
 | Domain | `backend/dotnet/control-plane/src/SyLabAI.Domain` | Domain entities, value objects, and provider-independent contracts. |
 | AI infrastructure | `backend/dotnet/control-plane/src/SyLabAI.Infrastructure.AI` | Remote model providers, DeepSeek/OpenAI-compatible adapter, retry, redaction, and structured provider errors. |
 | Document infrastructure | `backend/dotnet/control-plane/src/SyLabAI.Infrastructure.Documents` | Document conversion interfaces, chunking, metadata normalization, and parser safety checks. |
-| PostgreSQL infrastructure | `backend/dotnet/control-plane/src/SyLabAI.Infrastructure.PostgreSql` | PostgreSQL persistence, schema initialization, repositories, full-text / keyword search, partition-ready table design, and optional future vector store. |
+| SQL Server infrastructure | `backend/dotnet/control-plane/src/SyLabAI.Infrastructure.SqlServer` | SQL Server persistence, schema initialization, repositories, keyword search, partition-ready table design, optional Full-Text Search, and optional future vector store. |
 | Worker | `backend/dotnet/control-plane/src/SyLabAI.Worker` | Durable background work such as ingestion, extraction, and batch suggestion jobs. |
 | Document converter | `backend/services/document-converter` | Optional Python boundary for MarkItDown or other document parsers. |
 | Windows scripts | `scripts/windows` | Local setup, run, verification, and future Windows service helpers. |
@@ -108,7 +108,7 @@ sequenceDiagram
     participant W as Web
     participant A as Control API
     participant D as Document Adapter
-    participant DB as PostgreSQL
+    participant DB as SQL Server
     participant M as DeepSeek API
 
     U->>W: Submit controlled text or document metadata dry-run
@@ -129,18 +129,19 @@ sequenceDiagram
 
 ## Data Strategy
 
-MVP persistence uses PostgreSQL as the only runtime database. SQLite is not retained as a parallel fallback because the project needs to handle large experiment, crawler, and document-derived datasets beyond lightweight embedded-database assumptions.
+MVP persistence uses SQL Server as the only runtime database. SQLite is not retained as a parallel fallback because the project needs to handle large experiment, crawler, and document-derived datasets beyond lightweight embedded-database assumptions.
 
 Initial retrieval uses:
 
 - normalized document chunks,
-- PostgreSQL full-text search for English/structured terms,
+- SQL Server keyword search for MVP retrieval,
+- optional SQL Server Full-Text Search for English/structured terms when the installed edition includes the component,
 - keyword fallback for CJK and short lab terms,
 - application-layer scoring fallback when FTS returns no usable candidate,
 - optional later LLM reranking through DeepSeek,
 - citations tied to document/chunk metadata.
 
-Large tables should be designed for partitioning by dataset, project, source, or time once production ingestion requirements are confirmed. Vector search should stay optional until an approved embedding API exists. If embeddings are introduced later, the vector store should be a replaceable infrastructure detail within PostgreSQL or a separately approved analytical component.
+Large tables should be designed for partitioning by dataset, project, source, or time once production ingestion requirements are confirmed. Vector search should stay optional until an approved embedding API exists. If embeddings are introduced later, the vector store should be a replaceable infrastructure detail within SQL Server or a separately approved analytical component.
 
 ## Deployment Direction
 

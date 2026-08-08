@@ -1,4 +1,4 @@
-# Engineering Constraints
+﻿# Engineering Constraints
 
 This document is the long-form engineering boundary for SyLabAI. The root `AGENTS.md` is the short entrypoint; this file explains the durable rules in more detail.
 
@@ -43,7 +43,7 @@ backend/dotnet/control-plane/src/
 ├── SyLabAI.Domain
 ├── SyLabAI.Infrastructure.AI
 ├── SyLabAI.Infrastructure.Documents
-├── SyLabAI.Infrastructure.PostgreSql
+├── SyLabAI.Infrastructure.SqlServer
 └── SyLabAI.Worker
 ```
 
@@ -54,7 +54,7 @@ Layer expectations:
 - `SyLabAI.Domain` owns domain models, value objects, enums, and shared contracts that are independent of provider/runtime details.
 - `SyLabAI.Infrastructure.AI` owns remote model provider adapters, including DeepSeek/OpenAI-compatible clients, retry policy, redaction, and provider telemetry boundaries.
 - `SyLabAI.Infrastructure.Documents` owns document parser adapters, MarkItDown integration boundaries, chunking helpers, and conversion safety checks.
-- `SyLabAI.Infrastructure.PostgreSql` owns PostgreSQL persistence, schema initialization or migrations, repositories, search indexes, partition-ready table design, and optional future vector storage.
+- `SyLabAI.Infrastructure.SqlServer` owns SQL Server persistence, schema initialization or migrations, repositories, keyword search, optional Full-Text Search integration, partition-ready table design, and optional future vector storage.
 - `SyLabAI.Worker` owns background jobs that can be resumed or retried, such as ingestion, conversion, extraction, and batch suggestion runs.
 
 Frontend shape:
@@ -92,7 +92,7 @@ Frontend rules:
 - Prompt construction should produce sanitized, purpose-specific prompt briefs; do not dump full internal debug prompts into logs or public DTOs.
 - Live calls should return structured success, structured provider error, or structured degradation.
 - Do not require embeddings in the MVP unless an embedding API is explicitly approved.
-- If embeddings are later added, keep the embedding generator and vector store behind interfaces so PostgreSQL search can remain the baseline retrieval path.
+- If embeddings are later added, keep the embedding generator and vector store behind interfaces so SQL Server search can remain the baseline retrieval path.
 
 ## Document Conversion Boundary
 

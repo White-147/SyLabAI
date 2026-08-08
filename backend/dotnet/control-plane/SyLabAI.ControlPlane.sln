@@ -17,7 +17,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyLabAI.Infrastructure.Docu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyLabAI.Worker", "src\SyLabAI.Worker\SyLabAI.Worker.csproj", "{E1025B72-C58E-46DC-B18D-67DC488D1195}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyLabAI.Infrastructure.PostgreSql", "src\SyLabAI.Infrastructure.PostgreSql\SyLabAI.Infrastructure.PostgreSql.csproj", "{DF0AEB9C-C9E6-411F-9C47-8C521F3B2EE0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyLabAI.Infrastructure.SqlServer", "src\SyLabAI.Infrastructure.SqlServer\SyLabAI.Infrastructure.SqlServer.csproj", "{DF0AEB9C-C9E6-411F-9C47-8C521F3B2EE0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,4 +1,4 @@
-import { AlertTriangle, CheckCircle2, Database, FileText, Loader2, Plus, RefreshCw, Upload } from 'lucide-react';
+﻿import { AlertTriangle, CheckCircle2, Database, FileText, Loader2, Plus, RefreshCw, Upload } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { sylabApi } from '../../shared/api/sylabApi';
 import type { DocumentSummaryDto } from '../../shared/types/sylabTypes';
@@ -174,7 +174,7 @@ export default function DocumentLibraryPage() {
               <FileText size={18} />
               <div>
                 <strong>等待本轮导入</strong>
-                <span>列表数据来自 Control API 和 PostgreSQL 存储。</span>
+                <span>列表数据来自 Control API 和 SQL Server 存储。</span>
               </div>
             </div>
           )}

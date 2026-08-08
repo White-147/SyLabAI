@@ -1,4 +1,4 @@
-# Development
+﻿# Development
 
 This document records the local development flow. The project now has an initial runnable scaffold for the ASP.NET Core Control API and React/Vite web app.
 
@@ -44,20 +44,20 @@ Suggested default API origin:
 http://127.0.0.1:5200
 ```
 
-The backend uses PostgreSQL as the only runtime database. Configure it with one of:
+The backend uses SQL Server as the only runtime database. SQL Server Express or Developer Edition is sufficient for local development. Configure it with one of:
 
 ```text
 ConnectionStrings:SyLabAI
-SyLabAI:PostgreSql:ConnectionString
-SYLABAI_POSTGRES_CONNECTION_STRING
+SyLabAI:SqlServer:ConnectionString
+SYLABAI_SQLSERVER_CONNECTION_STRING
 ```
 
-Document metadata, chunks, lab tasks, and search indexes live in PostgreSQL. The UI must continue to access this data only through Control API DTOs.
+Document metadata, chunks, lab tasks, and search indexes live in SQL Server. The UI must continue to access this data only through Control API DTOs. The infrastructure layer creates the configured database when the login has permission, then initializes the application tables and indexes.
 
 Example local process configuration:
 
 ```powershell
-$env:SYLABAI_POSTGRES_CONNECTION_STRING = "Host=127.0.0.1;Port=5432;Database=sylabai;Username=<user>;Password=<password>"
+$env:SYLABAI_SQLSERVER_CONNECTION_STRING = "Server=localhost\\SQLEXPRESS;Database=SyLabAI;Trusted_Connection=True;TrustServerCertificate=True;"
 dotnet run --project .\backend\dotnet\control-plane\src\SyLabAI.ControlApi\SyLabAI.ControlApi.csproj
 ```
 

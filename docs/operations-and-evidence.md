@@ -1,4 +1,4 @@
-# Operations And Evidence Boundary
+﻿# Operations And Evidence Boundary
 
 This document defines what must not be committed and how operational evidence should be handled.
 
@@ -9,7 +9,7 @@ The following material must not enter Git:
 - DeepSeek or other provider API keys.
 - Service accounts, certificates, private keys, tokens, cookies, or credentials.
 - Raw internal lab documents, experiment records, supplier data, customer data, or business confidential files.
-- PostgreSQL databases, dumps, backups, exported tables, or future analytical-store backups.
+- SQL Server databases, backups, exported tables, or future analytical-store backups.
 - Uploaded files in `uploads/`.
 - Generated task cards, reports, exports, and outputs in `outputs/`.
 - Runtime logs, temporary files, parser cache, model/API raw payloads, or local service state.

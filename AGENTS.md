@@ -1,4 +1,4 @@
-# SyLabAI Engineering Constraints
+﻿# SyLabAI Engineering Constraints
 
 These instructions apply to the SyLabAI repository. Read this file before making non-trivial code, configuration, script, or documentation changes.
 
@@ -12,7 +12,7 @@ These instructions apply to the SyLabAI repository. Read this file before making
 ## Architecture Boundary
 
 - Frontend code must access backend capabilities only through SyLabAI Control API DTOs and API wrappers.
-- UI code must not directly access PostgreSQL, local files, API keys, provider SDKs, Python scripts, document converters, or runtime caches.
+- UI code must not directly access SQL Server, local files, API keys, provider SDKs, Python scripts, document converters, or runtime caches.
 - Provider calls, document conversion, retrieval, storage, and file system access must live behind explicit adapters, services, or IO boundaries.
 - Do not put business logic directly into HTTP endpoints. Endpoints should validate/route/compose; application services own use cases.
 - Keep public DTO shapes, API routes, persisted schemas, auth gates, sanitizer behavior, and default UI workflows stable unless the task explicitly changes them.
@@ -46,9 +46,9 @@ These instructions apply to the SyLabAI repository. Read this file before making
 
 - Backend: ASP.NET Core Web API under `backend/dotnet/control-plane`.
 - Frontend: React + TypeScript under `apps/web`.
-- Storage: PostgreSQL for MVP and later deployment. Do not keep SQLite as a parallel runtime database.
+- Storage: SQL Server for MVP and later deployment. Do not keep SQLite as a parallel runtime database.
 - Model calls: DeepSeek API through an OpenAI-compatible provider adapter.
-- Retrieval: start with PostgreSQL full-text search / keyword retrieval and optional LLM reranking. Do not require embeddings until an approved embedding API exists.
+- Retrieval: start with SQL Server keyword retrieval, keep SQL Server Full-Text Search as an optional enhancement, and allow optional LLM reranking. Do not require embeddings until an approved embedding API exists.
 - Document conversion: keep MarkItDown or any parser behind `backend/services/document-converter` or a backend adapter boundary.
 
 ## Documentation And Verification

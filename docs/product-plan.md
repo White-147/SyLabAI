@@ -1,4 +1,4 @@
-# Product Plan
+﻿# Product Plan
 
 SyLabAI is intended as an internal lab AI assistant for experiment knowledge work.
 
@@ -41,7 +41,7 @@ The first useful milestone should prove:
 
 Current implementation note:
 
-- Controlled text ingestion is persisted in PostgreSQL and indexed for source retrieval.
+- Controlled text ingestion is persisted in SQL Server and indexed for source retrieval.
 - File parser integration is represented by a converter dry-run boundary; full uploaded-file parsing still requires the later parser adapter.
 - DeepSeek provider configuration supports protected API key storage, provider model listing, and connectivity tests; generation calls remain explicitly disabled by default.
 - SQLite is not retained as a runtime database because the product needs a path toward 100GB+ tables and larger analytical workloads.

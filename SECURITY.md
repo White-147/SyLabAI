@@ -1,4 +1,4 @@
-# Security Policy
+﻿# Security Policy
 
 ## Supported Scope
 
@@ -19,7 +19,7 @@ Do not commit:
 - DeepSeek or other provider API keys;
 - tokens, cookies, certificates, private keys, or service-account files;
 - raw lab documents, experiment records, supplier data, or confidential business material;
-- PostgreSQL dumps, SQL backups, uploaded files, generated reports, parser outputs, or logs;
+- SQL Server databases, backups, uploaded files, generated reports, parser outputs, or logs;
 - raw provider payloads, prompt dumps, local absolute paths, or screenshots containing private data.
 
 Runtime material should stay in ignored project-local folders such as `data`, `uploads`, `outputs`, `.cache`, `.config`, and `.tmp`.

@@ -1,23 +1,23 @@
 using System.Text;
 using System.Text.Json;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
-using Npgsql;
 using SyLabAI.Application.Runtime;
 using SyLabAI.Domain.Documents;
 using SyLabAI.Domain.Knowledge;
 using SyLabAI.Domain.Tasks;
 
-namespace SyLabAI.Infrastructure.PostgreSql.Storage;
+namespace SyLabAI.Infrastructure.SqlServer.Storage;
 
-internal sealed class PostgreSqlLabKnowledgeStore : ILabKnowledgeStore
+internal sealed class SqlServerLabKnowledgeStore : ILabKnowledgeStore
 {
     private readonly object _gate = new();
     private readonly string? _connectionString;
     private bool _initialized;
 
-    public PostgreSqlLabKnowledgeStore(IConfiguration configuration)
+    public SqlServerLabKnowledgeStore(IConfiguration configuration)
     {
-        _connectionString = PostgreSqlConnectionStringResolver.Resolve(configuration);
+        _connectionString = SqlServerConnectionStringResolver.Resolve(configuration);
     }
 
     public IReadOnlyList<LabDocument> GetDocuments()
@@ -74,28 +74,31 @@ internal sealed class PostgreSqlLabKnowledgeStore : ILabKnowledgeStore
                 .Take(12)
                 .ToArray();
 
+            if (terms.Length == 0)
+            {
+                terms = [trimmedQuery];
+            }
+
             var textClauses = terms
-                .Select((_, index) => $"text ILIKE @term{index}")
+                .Select((_, index) => $"[text] LIKE @term{index} ESCAPE '\\'")
                 .ToArray();
-            var where = textClauses.Length == 0
-                ? "to_tsvector('simple', text) @@ websearch_to_tsquery('simple', @query)"
-                : $"to_tsvector('simple', text) @@ websearch_to_tsquery('simple', @query) OR {string.Join(" OR ", textClauses)}";
+            var score = terms
+                .Select((_, index) => $"CASE WHEN [text] LIKE @term{index} ESCAPE '\\' THEN 1 ELSE 0 END")
+                .ToArray();
 
             command.CommandText = $"""
-                SELECT id, document_id, document_title, section, ordinal, text
-                FROM document_chunks
-                WHERE {where}
-                ORDER BY ts_rank_cd(to_tsvector('simple', text), websearch_to_tsquery('simple', @query)) DESC,
+                SELECT TOP (@limit) id, document_id, document_title, section, [ordinal], [text]
+                FROM dbo.document_chunks
+                WHERE {string.Join(" OR ", textClauses)}
+                ORDER BY ({string.Join(" + ", score)}) DESC,
                          document_title,
-                         ordinal
-                LIMIT @limit;
+                         [ordinal];
                 """;
-            AddParameter(command, "query", trimmedQuery);
             AddParameter(command, "limit", Math.Clamp(limit, 1, 48));
 
             for (var index = 0; index < terms.Length; index++)
             {
-                AddParameter(command, $"term{index}", $"%{terms[index]}%");
+                AddParameter(command, $"term{index}", ToLikePattern(terms[index]));
             }
 
             using var reader = command.ExecuteReader();
@@ -119,7 +122,7 @@ internal sealed class PostgreSqlLabKnowledgeStore : ILabKnowledgeStore
             using var command = connection.CreateCommand();
             command.CommandText = """
                 SELECT id, title, status, steps_json, review_checklist_json, created_at
-                FROM lab_tasks
+                FROM dbo.lab_tasks
                 ORDER BY created_at DESC;
                 """;
 
@@ -143,7 +146,7 @@ internal sealed class PostgreSqlLabKnowledgeStore : ILabKnowledgeStore
             EnsureInitialized(connection);
             using var command = connection.CreateCommand();
             command.CommandText = """
-                INSERT INTO lab_tasks (id, title, status, steps_json, review_checklist_json, created_at)
+                INSERT INTO dbo.lab_tasks (id, title, status, steps_json, review_checklist_json, created_at)
                 VALUES (@id, @title, @status, @stepsJson, @reviewChecklistJson, @createdAt);
                 """;
             AddParameter(command, "id", task.Id);
@@ -158,33 +161,39 @@ internal sealed class PostgreSqlLabKnowledgeStore : ILabKnowledgeStore
         }
     }
 
-    private NpgsqlConnection OpenConnection()
+    private SqlConnection OpenConnection()
     {
         var connectionString = _connectionString;
         if (string.IsNullOrWhiteSpace(connectionString))
         {
             throw new InvalidOperationException(
-                "PostgreSQL connection string is not configured. Set ConnectionStrings:SyLabAI, SyLabAI:PostgreSql:ConnectionString, or SYLABAI_POSTGRES_CONNECTION_STRING.");
+                "SQL Server connection string is not configured. Set ConnectionStrings:SyLabAI, SyLabAI:SqlServer:ConnectionString, SYLABAI_SQLSERVER_CONNECTION_STRING, or SYLABAI_SQL_SERVER_CONNECTION_STRING.");
         }
 
-        var connection = new NpgsqlConnection(connectionString);
-        connection.Open();
-        return connection;
+        try
+        {
+            return OpenSqlConnection(connectionString);
+        }
+        catch (SqlException exception) when (IsMissingDatabase(exception))
+        {
+            EnsureDatabaseExists(connectionString);
+            return OpenSqlConnection(connectionString);
+        }
     }
 
-    private void EnsureInitialized(NpgsqlConnection connection)
+    private void EnsureInitialized(SqlConnection connection)
     {
         if (_initialized)
         {
             return;
         }
 
-        PostgreSqlSchema.EnsureCreated(connection);
+        SqlServerSchema.EnsureCreated(connection);
         SeedIfEmpty(connection);
         _initialized = true;
     }
 
-    private static IReadOnlyList<LabDocument> LoadDocuments(NpgsqlConnection connection)
+    private static IReadOnlyList<LabDocument> LoadDocuments(SqlConnection connection)
     {
         var chunks = LoadChunks(connection)
             .GroupBy(chunk => chunk.DocumentId)
@@ -193,7 +202,7 @@ internal sealed class PostgreSqlLabKnowledgeStore : ILabKnowledgeStore
         using var command = connection.CreateCommand();
         command.CommandText = """
             SELECT id, title, document_type, status, summary, created_at
-            FROM lab_documents
+            FROM dbo.lab_documents
             ORDER BY created_at DESC;
             """;
 
@@ -216,13 +225,13 @@ internal sealed class PostgreSqlLabKnowledgeStore : ILabKnowledgeStore
         return documents;
     }
 
-    private static IReadOnlyList<DocumentChunk> LoadChunks(NpgsqlConnection connection)
+    private static IReadOnlyList<DocumentChunk> LoadChunks(SqlConnection connection)
     {
         using var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT id, document_id, document_title, section, ordinal, text
-            FROM document_chunks
-            ORDER BY document_title, ordinal;
+            SELECT id, document_id, document_title, section, [ordinal], [text]
+            FROM dbo.document_chunks
+            ORDER BY document_title, [ordinal];
             """;
 
         using var reader = command.ExecuteReader();
@@ -236,7 +245,7 @@ internal sealed class PostgreSqlLabKnowledgeStore : ILabKnowledgeStore
         return chunks;
     }
 
-    private static DocumentChunk ReadChunk(NpgsqlDataReader reader)
+    private static DocumentChunk ReadChunk(SqlDataReader reader)
     {
         var chunkId = reader.GetGuid(0);
         var documentId = reader.GetGuid(1);
@@ -255,7 +264,7 @@ internal sealed class PostgreSqlLabKnowledgeStore : ILabKnowledgeStore
             citation);
     }
 
-    private static LabTask ReadTask(NpgsqlDataReader reader)
+    private static LabTask ReadTask(SqlDataReader reader)
     {
         return new LabTask(
             reader.GetGuid(0),
@@ -266,12 +275,12 @@ internal sealed class PostgreSqlLabKnowledgeStore : ILabKnowledgeStore
             ReadDate(reader, 5));
     }
 
-    private static void InsertDocument(NpgsqlConnection connection, NpgsqlTransaction transaction, LabDocument document)
+    private static void InsertDocument(SqlConnection connection, SqlTransaction transaction, LabDocument document)
     {
         using var documentCommand = connection.CreateCommand();
         documentCommand.Transaction = transaction;
         documentCommand.CommandText = """
-            INSERT INTO lab_documents (id, title, document_type, status, summary, created_at)
+            INSERT INTO dbo.lab_documents (id, title, document_type, status, summary, created_at)
             VALUES (@id, @title, @documentType, @status, @summary, @createdAt);
             """;
         AddParameter(documentCommand, "id", document.Id);
@@ -288,12 +297,12 @@ internal sealed class PostgreSqlLabKnowledgeStore : ILabKnowledgeStore
         }
     }
 
-    private static void InsertChunk(NpgsqlConnection connection, NpgsqlTransaction transaction, DocumentChunk chunk)
+    private static void InsertChunk(SqlConnection connection, SqlTransaction transaction, DocumentChunk chunk)
     {
         using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText = """
-            INSERT INTO document_chunks (id, document_id, document_title, section, ordinal, text)
+            INSERT INTO dbo.document_chunks (id, document_id, document_title, section, [ordinal], [text])
             VALUES (@id, @documentId, @documentTitle, @section, @ordinal, @text);
             """;
         AddParameter(command, "id", chunk.Id);
@@ -305,11 +314,11 @@ internal sealed class PostgreSqlLabKnowledgeStore : ILabKnowledgeStore
         command.ExecuteNonQuery();
     }
 
-    private static void SeedIfEmpty(NpgsqlConnection connection)
+    private static void SeedIfEmpty(SqlConnection connection)
     {
         using var countCommand = connection.CreateCommand();
-        countCommand.CommandText = "SELECT COUNT(*) FROM lab_documents;";
-        var count = (long)(countCommand.ExecuteScalar() ?? 0L);
+        countCommand.CommandText = "SELECT COUNT(*) FROM dbo.lab_documents;";
+        var count = Convert.ToInt32(countCommand.ExecuteScalar() ?? 0);
 
         if (count > 0)
         {
@@ -326,7 +335,7 @@ internal sealed class PostgreSqlLabKnowledgeStore : ILabKnowledgeStore
         transaction.Commit();
     }
 
-    private static void InsertSeedTask(NpgsqlConnection connection, NpgsqlTransaction transaction)
+    private static void InsertSeedTask(SqlConnection connection, SqlTransaction transaction)
     {
         var task = new LabTask(
             Guid.Parse("82cb4201-7562-418b-8c24-a159b01b9350"),
@@ -339,7 +348,7 @@ internal sealed class PostgreSqlLabKnowledgeStore : ILabKnowledgeStore
         using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText = """
-            INSERT INTO lab_tasks (id, title, status, steps_json, review_checklist_json, created_at)
+            INSERT INTO dbo.lab_tasks (id, title, status, steps_json, review_checklist_json, created_at)
             VALUES (@id, @title, @status, @stepsJson, @reviewChecklistJson, @createdAt);
             """;
         AddParameter(command, "id", task.Id);
@@ -414,9 +423,68 @@ internal sealed class PostgreSqlLabKnowledgeStore : ILabKnowledgeStore
             chunks);
     }
 
-    private static void AddParameter(NpgsqlCommand command, string name, object value)
+    private static void AddParameter(SqlCommand command, string name, object value)
     {
-        command.Parameters.AddWithValue(name, value);
+        var parameterName = name.StartsWith('@') ? name : $"@{name}";
+        command.Parameters.AddWithValue(parameterName, value);
+    }
+
+    private static SqlConnection OpenSqlConnection(string connectionString)
+    {
+        var connection = new SqlConnection(connectionString);
+        connection.Open();
+        return connection;
+    }
+
+    private static bool IsMissingDatabase(SqlException exception)
+    {
+        return exception.Errors
+            .Cast<SqlError>()
+            .Any(error => error.Number == 4060);
+    }
+
+    private static void EnsureDatabaseExists(string connectionString)
+    {
+        var builder = new SqlConnectionStringBuilder(connectionString);
+        var databaseName = builder.InitialCatalog;
+        if (string.IsNullOrWhiteSpace(databaseName))
+        {
+            throw new InvalidOperationException(
+                "SQL Server connection string must include Database or Initial Catalog.");
+        }
+
+        builder.InitialCatalog = "master";
+
+        using var connection = OpenSqlConnection(builder.ConnectionString);
+        using var command = connection.CreateCommand();
+        command.CommandText = """
+            IF DB_ID(@databaseName) IS NULL
+            BEGIN
+                DECLARE @sql nvarchar(max) = N'CREATE DATABASE ' + QUOTENAME(@databaseName);
+                EXEC sp_executesql @sql;
+            END;
+            """;
+        AddParameter(command, "databaseName", databaseName);
+        command.ExecuteNonQuery();
+    }
+
+    private static string ToLikePattern(string term)
+    {
+        var pattern = new StringBuilder("%");
+        foreach (var character in term)
+        {
+            pattern.Append(character switch
+            {
+                '\\' => "\\\\",
+                '%' => "\\%",
+                '_' => "\\_",
+                '[' => "\\[",
+                _ => character.ToString()
+            });
+        }
+
+        pattern.Append('%');
+        return pattern.ToString();
     }
 
     private static IReadOnlyList<string> GetSearchSegments(string query)
@@ -472,7 +540,7 @@ internal sealed class PostgreSqlLabKnowledgeStore : ILabKnowledgeStore
         return character is >= '\u4e00' and <= '\u9fff';
     }
 
-    private static DateTimeOffset ReadDate(NpgsqlDataReader reader, int ordinal)
+    private static DateTimeOffset ReadDate(SqlDataReader reader, int ordinal)
     {
         var dateTime = reader.GetDateTime(ordinal);
         return new DateTimeOffset(DateTime.SpecifyKind(dateTime, DateTimeKind.Utc));

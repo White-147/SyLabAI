@@ -1,4 +1,4 @@
-# Reference Projects
+﻿# Reference Projects
 
 SyLabAI uses selected ideas from local and external reference projects. These projects are references, not upstream bases to copy wholesale.
 
@@ -97,28 +97,28 @@ Historical reference only:
 - optional future lightweight vector search ideas,
 - embedded-database tradeoff comparison.
 
-Do not use SQLite or `sqlite-vec` as a runtime database in SyLabAI. The project uses PostgreSQL as its single database direction.
+Do not use SQLite or `sqlite-vec` as a runtime database in SyLabAI. The project uses SQL Server as its single database direction.
 
 Current adoption:
 
 - No SQLite runtime storage is retained.
-- Knowledge search asks the PostgreSQL store for candidates first, then applies application-layer scoring and fallback.
+- Knowledge search asks the SQL Server store for candidates first, then applies application-layer scoring and fallback.
 - No vector dependency is required for the MVP.
 
-## `PostgreSQL`
+## `SQL Server`
 
 Use for:
 
 - production-ready relational storage,
 - large document and crawler-derived datasets,
 - partition-ready schema design,
-- full-text search and indexed keyword retrieval,
+- keyword retrieval, optional Full-Text Search, and indexed metadata lookup,
 - future vector extensions only if embeddings are approved.
 
 Current adoption:
 
-- `SyLabAI.Infrastructure.PostgreSql` is the single persistence infrastructure project.
-- Runtime configuration uses `ConnectionStrings:SyLabAI`, `SyLabAI:PostgreSql:ConnectionString`, or `SYLABAI_POSTGRES_CONNECTION_STRING`.
+- `SyLabAI.Infrastructure.SqlServer` is the single persistence infrastructure project.
+- Runtime configuration uses `ConnectionStrings:SyLabAI`, `SyLabAI:SqlServer:ConnectionString`, or `SYLABAI_SQLSERVER_CONNECTION_STRING`.
 - SQLite is not kept as a fallback.
 
 ## Local Project Lessons

@@ -1,4 +1,4 @@
-# SyLabAI Web App
+﻿# SyLabAI Web App
 
 This directory contains the React + TypeScript frontend workspace.
 
@@ -24,7 +24,7 @@ Feature route pages:
 - `lab-tasks`
 - `settings`
 
-Frontend code should call backend capabilities only through Control API wrappers. It must not directly read local files, PostgreSQL databases, provider SDKs, API keys, or document converter internals.
+Frontend code should call backend capabilities only through Control API wrappers. It must not directly read local files, SQL Server databases, provider SDKs, API keys, or document converter internals.
 
 ## Commands
 

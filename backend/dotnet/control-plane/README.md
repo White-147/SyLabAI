@@ -1,4 +1,4 @@
-# SyLabAI Control Plane
+﻿# SyLabAI Control Plane
 
 This directory contains the ASP.NET Core backend solution.
 
@@ -9,7 +9,7 @@ Projects:
 - `src/SyLabAI.Domain`
 - `src/SyLabAI.Infrastructure.AI`
 - `src/SyLabAI.Infrastructure.Documents`
-- `src/SyLabAI.Infrastructure.PostgreSql`
+- `src/SyLabAI.Infrastructure.SqlServer`
 - `src/SyLabAI.Worker`
 - `tests/SyLabAI.ControlApi.Tests`
 
@@ -32,7 +32,7 @@ The Control API should expose stable DTO-based endpoints. Provider calls, docume
 - `DELETE /api/settings/provider/api-key`
 - `POST /api/settings/provider/connectivity-tests`
 
-The current implementation uses PostgreSQL as the single runtime database for knowledge and task data. Provider model listing and connectivity tests are explicit settings actions; generation calls remain disabled unless provider settings explicitly enable guarded live calls.
+The current implementation uses SQL Server as the single runtime database for knowledge and task data. The infrastructure layer creates the configured database when the login has permission, then initializes application tables and indexes. Provider model listing and connectivity tests are explicit settings actions; generation calls remain disabled unless provider settings explicitly enable guarded live calls.
 
 ## Commands
 
