@@ -26,7 +26,7 @@ SyLabAI 是一个面向实验室知识工作的公开 Demo 项目，定位为“
 
 | 工作台总览 | 运行边界（Provider 配置） |
 | --- | --- |
-| ![工作台总览](docs/screenshots/dashboard.png) | ![运行边界](docs/screenshots/settings.png) |
+| ![工作台总览](docs/screenshots/dashboard.png?v=2) | ![运行边界](docs/screenshots/settings.png?v=2) |
 
 ## 项目功能规划
 
