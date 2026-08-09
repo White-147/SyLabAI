@@ -1,5 +1,6 @@
 import { lazy } from 'react';
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+// hash 模式：静态托管（HF Static Space）下子路由刷新不 404
+import { createHashRouter, Navigate } from 'react-router-dom';
 import { AppShell } from './layouts/AppShell';
 import { RouteErrorPage } from './RouteFallbacks';
 
@@ -11,7 +12,7 @@ const PathSuggestionsPage = lazy(() => import('../features/path-suggestions/Path
 const LabTasksPage = lazy(() => import('../features/lab-tasks/LabTasksPage'));
 const SettingsPage = lazy(() => import('../features/settings/SettingsPage'));
 
-export const router = createBrowserRouter([
+export const router = createHashRouter([
   {
     path: '/',
     element: <AppShell />,

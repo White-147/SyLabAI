@@ -1,4 +1,13 @@
-﻿<h1 align="center">SyLabAI</h1>
+---
+title: SyLabAI
+emoji: 🧪
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+pinned: false
+---
+
+<h1 align="center">SyLabAI</h1>
 
 <p align="center">韶远实验 AI 助手 Demo，面向实验资料检索、历史实验记录结构化、路径建议和实验室任务下发的 Windows 内网 AI 应用方案。</p>
 

@@ -46,3 +46,6 @@ coverage/
 .venv/
 __pycache__/
 *.pyc
+
+# SyLabAI.Infrastructure.Sqlite 是代码项目目录（与数据库文件 *.sqlite 无关），放行
+!**/SyLabAI.Infrastructure.Sqlite/

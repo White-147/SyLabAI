@@ -5,6 +5,7 @@
     <ProjectReference Include="..\SyLabAI.Infrastructure.AI\SyLabAI.Infrastructure.AI.csproj" />
     <ProjectReference Include="..\SyLabAI.Infrastructure.Documents\SyLabAI.Infrastructure.Documents.csproj" />
     <ProjectReference Include="..\SyLabAI.Infrastructure.SqlServer\SyLabAI.Infrastructure.SqlServer.csproj" />
+    <ProjectReference Include="..\SyLabAI.Infrastructure.Sqlite\SyLabAI.Infrastructure.Sqlite.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
