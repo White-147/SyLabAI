@@ -64,6 +64,14 @@ var app = builder.Build();
 
 app.UseCors("SyLabAI.Web");
 
+// 同容器托管前端（容器内 wwwroot 存在时启用；本地开发无 wwwroot 不受影响）
+var webRootPath = Path.Combine(AppContext.BaseDirectory, "wwwroot");
+if (Directory.Exists(webRootPath))
+{
+    app.UseDefaultFiles();
+    app.UseStaticFiles();
+}
+
 app
     .MapHealthEndpoints()
     .MapDocumentEndpoints()

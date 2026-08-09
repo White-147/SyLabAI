@@ -15,7 +15,8 @@ import type {
 } from '../types/sylabTypes';
 
 const configuredBaseUrl = import.meta.env.VITE_SYLABAI_API_BASE_URL as string | undefined;
-const API_BASE_URL = (configuredBaseUrl?.replace(/\/$/, '') || 'http://127.0.0.1:5200');
+// 生产构建默认相对路径（前端由后端容器同域托管）；本地开发默认直连 5200（依赖后端 CORS）
+const API_BASE_URL = (configuredBaseUrl?.replace(/\/$/, '') || (import.meta.env.DEV ? 'http://127.0.0.1:5200' : ''));
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
